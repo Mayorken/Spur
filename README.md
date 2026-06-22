@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# Spur
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Desire. Consent. Connection. Instantly.**
 
-Currently, two official plugins are available:
+Real-time adult connection platform that matches people on mutual intent — no swiping, no waiting.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Project Structure
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+├── src/               # React frontend (Vite + TypeScript + Tailwind)
+│   ├── components/    # Reusable UI components (ProfileCard, RadarView, etc.)
+│   ├── pages/         # Route pages (Landing, Discover, Nearby, Chat, etc.)
+│   └── utils/         # Mock data and helpers
+├── app/               # FastAPI backend
+│   ├── api/           # REST endpoints (auth, users, intents, matches, safety)
+│   ├── core/          # Config, database, security
+│   ├── models/        # SQLAlchemy models
+│   ├── schemas/       # Pydantic schemas
+│   ├── services/      # Business logic (matching engine, chat)
+│   └── websockets/    # Real-time WebSocket handlers
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Frontend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Live: https://dist-pjcxtdlo.devinapps.com
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
+
+## Backend API
+
+```bash
+pip install -e .
+cp .env.example .env
+uvicorn main:app --reload --port 8000
+```
+
+Requires PostgreSQL and Redis.
+
+## API Endpoints
+
+- `POST /api/v1/auth/signup` & `/login` — JWT auth
+- `POST /api/v1/intents/activate` — Core Spur mechanic
+- `GET /api/v1/intents/nearby` — Find matching users within radius
+- `POST /api/v1/intents/match/{user_id}` — Create mutual match
+- `GET /api/v1/matches/conversations` — Chat list
+- `POST /api/v1/safety/panic` — One-tap panic button
+- `WS /ws?token=<jwt>` — Real-time matching & chat
