@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --color-spur-purple: #7c3aed;
+  --color-spur-pink: #ec4899;
+  --color-spur-dark: #0f0a1a;
+  --color-spur-darker: #080510;
+  --color-spur-card: #1a1225;
+  --color-spur-border: #2d1f42;
+  --color-spur-text: #e2d9f3;
+  --color-spur-muted: #9b8ab8;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-spur-darker);
+  color: var(--color-spur-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-spur-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-spur-border);
+  border-radius: 3px;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #7c3aed, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effect */
+.glow-purple {
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.3), 0 0 80px rgba(124, 58, 237, 0.1);
+}
+
+.glow-pink {
+  box-shadow: 0 0 40px rgba(236, 72, 153, 0.3), 0 0 80px rgba(236, 72, 153, 0.1);
+}
+
+/* Pulse animation for intent button */
+@keyframes intent-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 20px rgba(124, 58, 237, 0);
+  }
+}
+
+.intent-pulse {
+  animation: intent-pulse 2s infinite;
+}
+
+/* Ripple animation */
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  animation: ripple 1.5s infinite;
+}

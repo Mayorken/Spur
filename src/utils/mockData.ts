@@ -1,0 +1,180 @@
+export const mockProfiles = [
+  {
+    id: '1',
+    name: 'Sophia',
+    age: 26,
+    distance: '0.3km',
+    intent: 'Casual Connection',
+    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop',
+    verified: true,
+    bio: 'Coffee lover. Night owl. Open to good vibes.',
+  },
+  {
+    id: '2',
+    name: 'Marcus',
+    age: 29,
+    distance: '0.5km',
+    intent: 'Open to Intimacy',
+    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+    verified: true,
+    bio: 'Gym, music, spontaneous plans.',
+  },
+  {
+    id: '3',
+    name: 'Luna',
+    age: 24,
+    distance: '0.2km',
+    intent: 'Romantic',
+    imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=600&fit=crop',
+    verified: false,
+    bio: 'Art student. Dancing. Deep conversations.',
+  },
+  {
+    id: '4',
+    name: 'Alex',
+    age: 31,
+    distance: '0.8km',
+    intent: 'Looking to Hook Up',
+    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop',
+    verified: true,
+    bio: 'No games. Straightforward. Let us see what happens.',
+  },
+  {
+    id: '5',
+    name: 'Jade',
+    age: 27,
+    distance: '0.4km',
+    intent: 'Casual Connection',
+    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop',
+    verified: true,
+    bio: 'Traveler. Foodie. Living in the moment.',
+  },
+]
+
+export const mockNearbyUsers = [
+  {
+    id: '1',
+    name: 'Sophia',
+    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+    intent: 'Casual Connection',
+    distance: '0.3km',
+  },
+  {
+    id: '2',
+    name: 'Marcus',
+    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    intent: 'Open to Intimacy',
+    distance: '0.5km',
+  },
+  {
+    id: '3',
+    name: 'Luna',
+    imageUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop&crop=face',
+    intent: 'Romantic',
+    distance: '0.2km',
+  },
+  {
+    id: '4',
+    name: 'Alex',
+    imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+    intent: 'Looking to Hook Up',
+    distance: '0.8km',
+  },
+  {
+    id: '5',
+    name: 'Jade',
+    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
+    intent: 'Casual Connection',
+    distance: '0.4km',
+  },
+  {
+    id: '6',
+    name: 'Ryan',
+    imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=face',
+    intent: 'Romantic',
+    distance: '0.6km',
+  },
+  {
+    id: '7',
+    name: 'Mia',
+    imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    intent: 'Casual Connection',
+    distance: '0.7km',
+  },
+]
+
+export const mockConversations = [
+  {
+    id: '1',
+    name: 'Sophia',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+    lastMessage: 'Hey! I saw we matched on intent. Wanna grab a drink?',
+    time: '2m',
+    unread: 2,
+    online: true,
+  },
+  {
+    id: '2',
+    name: 'Marcus',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    lastMessage: 'That sounds great, see you there!',
+    time: '15m',
+    unread: 0,
+    online: true,
+  },
+  {
+    id: '3',
+    name: 'Luna',
+    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop&crop=face',
+    lastMessage: 'I love that place too!',
+    time: '1h',
+    unread: 1,
+    online: false,
+  },
+  {
+    id: '4',
+    name: 'Alex',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face',
+    lastMessage: 'Cool, let me know when you are free',
+    time: '3h',
+    unread: 0,
+    online: false,
+  },
+]
+
+export const mockMatches = [
+  {
+    id: '1',
+    name: 'Sophia',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+  },
+  {
+    id: '2',
+    name: 'Marcus',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+  },
+  {
+    id: '5',
+    name: 'Jade',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face',
+  },
+  {
+    id: '6',
+    name: 'Ryan',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=face',
+  },
+  {
+    id: '7',
+    name: 'Mia',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+  },
+]
+
+export const mockChatMessages = [
+  { id: '1', sender: 'them', text: 'Hey! I saw we matched on intent 💫', time: '7:42 PM' },
+  { id: '2', sender: 'me', text: 'Hi! Yeah, great timing right?', time: '7:43 PM' },
+  { id: '3', sender: 'them', text: 'Totally! Are you at the rooftop bar on 5th?', time: '7:43 PM' },
+  { id: '4', sender: 'me', text: 'Close by! Want to grab a drink?', time: '7:44 PM' },
+  { id: '5', sender: 'them', text: 'I would love that. See you in 5?', time: '7:44 PM' },
+  { id: '6', sender: 'me', text: 'Perfect, heading over now!', time: '7:45 PM' },
+]
