@@ -20,16 +20,14 @@ export default function ProximityAlert({ user, onAccept, onDecline, onClose }: P
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          onClose()
-          return 0
-        }
-        return prev - 1
-      })
+      setCountdown((prev) => (prev <= 1 ? 0 : prev - 1))
     }, 1000)
     return () => clearInterval(timer)
-  }, [onClose])
+  }, [])
+
+  useEffect(() => {
+    if (countdown === 0) onClose()
+  }, [countdown, onClose])
 
   return (
     <motion.div

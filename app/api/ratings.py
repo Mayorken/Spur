@@ -30,18 +30,15 @@ async def rate_user(
     if data.rated_user_id == current_user.id:
         raise HTTPException(status_code=400, detail="Cannot rate yourself")
 
-    # Verify there's an active/past match between the users
+    # Verify there's an active or past match between the users
     match_query = select(Match).where(
-        and_(
-            Match.is_active == True,  # noqa: E712
-            (
-                (Match.user_a_id == current_user.id)
-                & (Match.user_b_id == data.rated_user_id)
-            )
-            | (
-                (Match.user_a_id == data.rated_user_id)
-                & (Match.user_b_id == current_user.id)
-            ),
+        (
+            (Match.user_a_id == current_user.id)
+            & (Match.user_b_id == data.rated_user_id)
+        )
+        | (
+            (Match.user_a_id == data.rated_user_id)
+            & (Match.user_b_id == current_user.id)
         )
     )
     result = await db.execute(match_query)
@@ -94,7 +91,7 @@ async def rate_user(
         tag_info = AVAILABLE_TAGS[tag]
 
         if summary:
-            summary.count += 1
+            summary.count = ExperienceTagSummary.count + 1
         else:
             summary = ExperienceTagSummary(
                 user_id=data.rated_user_id,
