@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapPin, Filter, Zap } from 'lucide-react'
 import BottomNav from '../components/BottomNav'
 import ProfileCard from '../components/ProfileCard'
-import { mockProfiles } from '../utils/mockData'
+import ProximityAlert from '../components/ProximityAlert'
+import { mockProfiles, mockNearbyUsers, mockUserExperienceTags } from '../utils/mockData'
 
 const intentFilters = ['All', 'Casual', 'Romantic', 'Intimacy', 'Hook Up']
 
@@ -11,6 +12,27 @@ export default function Discover() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [activeFilter, setActiveFilter] = useState('All')
   const [showIntentSelector, setShowIntentSelector] = useState(false)
+  const [proximityAlert, setProximityAlert] = useState<typeof mockNearbyUsers[0] | null>(null)
+  const [matchedUser, setMatchedUser] = useState<string | null>(null)
+
+  const dismissAlert = useCallback(() => setProximityAlert(null), [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const randomUser = mockNearbyUsers[Math.floor(Math.random() * mockNearbyUsers.length)]
+      setProximityAlert(randomUser)
+    }, 8000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleAccept = (userId: string) => {
+    setMatchedUser(userId)
+    setProximityAlert(null)
+  }
+
+  const handleDecline = () => {
+    setProximityAlert(null)
+  }
 
   const handleLike = () => {
     setCurrentIndex((prev) => Math.min(prev + 1, mockProfiles.length - 1))
@@ -95,6 +117,7 @@ export default function Discover() {
                 intent={currentProfile.intent}
                 imageUrl={currentProfile.imageUrl}
                 verified={currentProfile.verified}
+                experienceTags={mockUserExperienceTags[currentProfile.id] || []}
                 onLike={handleLike}
                 onPass={handlePass}
               />
@@ -160,6 +183,42 @@ export default function Discover() {
                 ))}
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Proximity Alert Popup */}
+      <AnimatePresence>
+        {proximityAlert && (
+          <ProximityAlert
+            user={proximityAlert}
+            onAccept={handleAccept}
+            onDecline={handleDecline}
+            onClose={dismissAlert}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Match accepted toast */}
+      <AnimatePresence>
+        {matchedUser && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-24 left-4 right-4 z-50 bg-gradient-to-r from-spur-purple to-spur-pink rounded-2xl p-4 flex items-center gap-3"
+          >
+            <Zap size={20} className="text-white" />
+            <div className="flex-1">
+              <p className="text-white font-medium text-sm">Connection accepted!</p>
+              <p className="text-white/70 text-xs">You can now chat with this person</p>
+            </div>
+            <button
+              onClick={() => setMatchedUser(null)}
+              className="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-medium"
+            >
+              Chat
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

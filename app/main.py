@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.intents import router as intents_router
 from app.api.matches import router as matches_router
+from app.api.ratings import router as ratings_router
 from app.api.safety import router as safety_router
 from app.api.users import router as users_router
 from app.core.config import settings
@@ -41,6 +42,7 @@ app.include_router(users_router, prefix=settings.API_PREFIX)
 app.include_router(intents_router, prefix=settings.API_PREFIX)
 app.include_router(matches_router, prefix=settings.API_PREFIX)
 app.include_router(safety_router, prefix=settings.API_PREFIX)
+app.include_router(ratings_router, prefix=settings.API_PREFIX)
 
 # WebSocket
 app.websocket("/ws")(websocket_endpoint)

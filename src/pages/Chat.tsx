@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Phone, Video, MoreVertical, Send, Shield, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Phone, Video, MoreVertical, Send, Shield, AlertTriangle, Star } from 'lucide-react'
 import { mockChatMessages } from '../utils/mockData'
+import RatingModal from '../components/RatingModal'
 
 export default function Chat() {
   const [messages, setMessages] = useState(mockChatMessages)
   const [input, setInput] = useState('')
   const [showSafety, setShowSafety] = useState(false)
+  const [showRating, setShowRating] = useState(false)
   const navigate = useNavigate()
 
   const sendMessage = () => {
@@ -59,6 +61,13 @@ export default function Chat() {
             </button>
             <button className="p-2 rounded-full hover:bg-spur-card transition-colors">
               <Video size={16} className="text-spur-muted" />
+            </button>
+            <button
+              onClick={() => setShowRating(true)}
+              className="p-2 rounded-full hover:bg-spur-card transition-colors"
+              title="Rate this person"
+            >
+              <Star size={16} className="text-yellow-400" />
             </button>
             <button className="p-2 rounded-full hover:bg-spur-card transition-colors">
               <MoreVertical size={16} className="text-spur-muted" />
@@ -140,6 +149,31 @@ export default function Chat() {
           </motion.button>
         </div>
       </div>
+
+      {/* Rating Modal */}
+      <AnimatePresence>
+        {showRating && (
+          <RatingModal
+            user={{
+              name: 'Sophia',
+              imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+            }}
+            onSubmit={(tags) => {
+              setShowRating(false)
+              setMessages([
+                ...messages,
+                {
+                  id: String(messages.length + 1),
+                  sender: 'me',
+                  text: `Rated with ${tags.length} experience tag${tags.length > 1 ? 's' : ''}`,
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                },
+              ])
+            }}
+            onClose={() => setShowRating(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Safety Modal */}
       {showSafety && (

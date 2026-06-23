@@ -170,6 +170,31 @@ export const mockMatches = [
   },
 ]
 
+export const mockExperienceTags = [
+  { id: '1', label: 'Great Conversationalist', emoji: '💬', count: 8, rank: 'silver' as const },
+  { id: '2', label: 'Head Master', emoji: '👑', count: 17, rank: 'gold' as const },
+  { id: '3', label: 'Respectful', emoji: '🤝', count: 23, rank: 'gold' as const },
+  { id: '4', label: 'Fun Energy', emoji: '⚡', count: 4, rank: 'bronze' as const },
+  { id: '5', label: 'Good Kisser', emoji: '💋', count: 31, rank: 'diamond' as const },
+  { id: '6', label: 'Adventurous', emoji: '🌶️', count: 12, rank: 'silver' as const },
+]
+
+export const mockUserExperienceTags: Record<string, typeof mockExperienceTags> = {
+  '1': [
+    { id: '1', label: 'Fun Energy', emoji: '⚡', count: 6, rank: 'silver' as const },
+    { id: '2', label: 'Great Conversationalist', emoji: '💬', count: 3, rank: 'bronze' as const },
+    { id: '3', label: 'Adventurous', emoji: '🌶️', count: 16, rank: 'gold' as const },
+  ],
+  '2': [
+    { id: '1', label: 'Head Master', emoji: '👑', count: 22, rank: 'gold' as const },
+    { id: '2', label: 'Stamina King', emoji: '💪', count: 9, rank: 'silver' as const },
+  ],
+  '3': [
+    { id: '1', label: 'Romantic', emoji: '🌹', count: 35, rank: 'diamond' as const },
+    { id: '2', label: 'Good Kisser', emoji: '💋', count: 14, rank: 'silver' as const },
+  ],
+}
+
 export const mockChatMessages = [
   { id: '1', sender: 'them', text: 'Hey! I saw we matched on intent 💫', time: '7:42 PM' },
   { id: '2', sender: 'me', text: 'Hi! Yeah, great timing right?', time: '7:43 PM' },
