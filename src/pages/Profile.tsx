@@ -14,6 +14,8 @@ import {
   Edit3,
 } from 'lucide-react'
 import BottomNav from '../components/BottomNav'
+import ExperienceCards from '../components/ExperienceCards'
+import { mockExperienceTags } from '../utils/mockData'
 
 export default function Profile() {
   const [privacyMode, setPrivacyMode] = useState(true)
@@ -96,6 +98,11 @@ export default function Profile() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Experience Cards */}
+      <div className="px-4 mb-4">
+        <ExperienceCards tags={mockExperienceTags} />
       </div>
 
       {/* Settings list */}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Heart, X, Star, MapPin, Shield } from 'lucide-react'
+import { Heart, X, Star, MapPin, Shield, Award } from 'lucide-react'
+import type { ExperienceTag } from './ExperienceCards'
 
 interface ProfileCardProps {
   name: string
@@ -9,6 +10,7 @@ interface ProfileCardProps {
   intent: string
   imageUrl: string
   verified?: boolean
+  experienceTags?: ExperienceTag[]
   onLike?: () => void
   onPass?: () => void
   onSuperLike?: () => void
@@ -21,6 +23,7 @@ export default function ProfileCard({
   intent,
   imageUrl,
   verified = false,
+  experienceTags = [],
   onLike,
   onPass,
   onSuperLike,
@@ -86,6 +89,24 @@ export default function ProfileCard({
                 <MapPin size={12} className="text-spur-muted" />
                 <span className="text-spur-muted text-xs">{distance} away</span>
               </div>
+
+              {/* Experience tags on card */}
+              {experienceTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {experienceTags.slice(0, 3).map((tag) => (
+                    <span
+                      key={tag.id}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-sm text-[10px] text-white/90"
+                    >
+                      <span>{tag.emoji}</span>
+                      <span>{tag.label}</span>
+                      {tag.rank === 'gold' || tag.rank === 'diamond' ? (
+                        <Award size={8} className={tag.rank === 'diamond' ? 'text-cyan-300' : 'text-yellow-400'} />
+                      ) : null}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
