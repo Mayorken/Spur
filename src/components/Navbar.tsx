@@ -26,7 +26,7 @@ export default function Navbar() {
             Safety
           </a>
           <Link
-            to="/onboarding"
+            to="/login"
             className="px-5 py-2 rounded-full bg-gradient-to-r from-spur-purple to-spur-pink text-white text-sm font-medium hover:opacity-90 transition-opacity"
           >
             Get Started
@@ -62,7 +62,7 @@ export default function Navbar() {
                 Safety
               </a>
               <Link
-                to="/onboarding"
+                to="/login"
                 className="px-5 py-3 rounded-full bg-gradient-to-r from-spur-purple to-spur-pink text-white text-sm font-medium text-center"
                 onClick={() => setIsOpen(false)}
               >

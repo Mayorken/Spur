@@ -11,15 +11,38 @@ import {
   LogOut,
   ChevronRight,
   Camera,
-  Edit3,
 } from 'lucide-react'
 import BottomNav from '../components/BottomNav'
 import ExperienceCards from '../components/ExperienceCards'
 import { mockExperienceTags } from '../utils/mockData'
+import { useAuth } from '../context/AuthContext'
+import { users } from '../utils/api'
 
 export default function Profile() {
-  const [privacyMode, setPrivacyMode] = useState(true)
+  const { user, logout, refreshUser } = useAuth()
   const navigate = useNavigate()
+  const [ghostMode, setGhostMode] = useState(user?.ghost_mode ?? false)
+  const [savingGhost, setSavingGhost] = useState(false)
+
+  const toggleGhostMode = async (val: boolean) => {
+    setSavingGhost(true)
+    try {
+      await users.updateMe({ ghost_mode: val })
+      setGhostMode(val)
+      await refreshUser()
+    } catch {
+      // revert on error
+    } finally {
+      setSavingGhost(false)
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
+  const trustPercent = Math.round((user?.trust_score ?? 0) * 100)
 
   return (
     <div className="min-h-screen bg-spur-darker pb-20">
@@ -40,12 +63,14 @@ export default function Profile() {
           animate={{ opacity: 1, y: 0 }}
           className="relative p-6 rounded-3xl bg-spur-card border border-spur-border/50"
         >
-          {/* Avatar */}
           <div className="flex flex-col items-center">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-spur-purple/50">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-spur-purple/50">
                 <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face"
+                  src={
+                    user?.avatar_url ??
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id ?? 'me'}`
+                  }
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -55,49 +80,35 @@ export default function Profile() {
               </button>
             </div>
 
-            <h2 className="text-xl font-bold text-white mt-4">You</h2>
-            <p className="text-spur-muted text-sm mt-1">@yourhandle</p>
+            <h2 className="text-xl font-bold text-white mt-4">
+              {user?.display_name ?? 'You'}
+            </h2>
+            <p className="text-spur-muted text-sm mt-1">{user?.email}</p>
 
-            {/* Verification badge */}
-            <div className="flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
-              <Shield size={12} className="text-green-400" />
-              <span className="text-[10px] text-green-400 font-medium">Verified</span>
-            </div>
+            {user?.is_verified && (
+              <div className="flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/30">
+                <Shield size={12} className="text-green-400" />
+                <span className="text-[10px] text-green-400 font-medium">Verified</span>
+              </div>
+            )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-spur-border/30">
             <div className="text-center">
-              <p className="text-xl font-bold text-white">12</p>
+              <p className="text-xl font-bold text-white">—</p>
               <p className="text-[10px] text-spur-muted">Matches</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-white">5</p>
+              <p className="text-xl font-bold text-white">—</p>
               <p className="text-[10px] text-spur-muted">Connections</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-bold text-white">89%</p>
+              <p className="text-xl font-bold text-white">{trustPercent}%</p>
               <p className="text-[10px] text-spur-muted">Trust Score</p>
             </div>
           </div>
         </motion.div>
-      </div>
-
-      {/* Current Intent */}
-      <div className="px-4 mb-4">
-        <div className="p-4 rounded-2xl bg-spur-purple/10 border border-spur-purple/30">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-spur-muted mb-1">Current Intent</p>
-              <p className="text-white font-medium text-sm flex items-center gap-2">
-                <span className="text-lg">✨</span> Casual Connection
-              </p>
-            </div>
-            <button className="px-3 py-1.5 rounded-full bg-spur-purple/20 text-spur-purple text-xs font-medium">
-              Change
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Experience Cards */}
@@ -116,7 +127,11 @@ export default function Profile() {
           label="Ghost Mode"
           description="Browse invisibly"
           trailing={
-            <Toggle checked={privacyMode} onChange={setPrivacyMode} />
+            <Toggle
+              checked={ghostMode}
+              onChange={toggleGhostMode}
+              disabled={savingGhost}
+            />
           }
         />
         <SettingItem
@@ -128,19 +143,13 @@ export default function Profile() {
         <SettingItem
           icon={<Shield size={18} className="text-green-400" />}
           label="Safety Preferences"
-          description="ID verified, panic button on"
+          description={user?.is_id_verified ? 'ID verified, panic button on' : 'Panic button on'}
           trailing={<ChevronRight size={16} className="text-spur-muted" />}
         />
         <SettingItem
           icon={<Bell size={18} className="text-spur-purple" />}
           label="Notifications"
           description="Matches & messages"
-          trailing={<ChevronRight size={16} className="text-spur-muted" />}
-        />
-        <SettingItem
-          icon={<Edit3 size={18} className="text-spur-purple" />}
-          label="Edit Profile"
-          description="Photos, bio, preferences"
           trailing={<ChevronRight size={16} className="text-spur-muted" />}
         />
         <SettingItem
@@ -152,7 +161,7 @@ export default function Profile() {
 
         <div className="pt-4">
           <button
-            onClick={() => navigate('/')}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 p-4 rounded-2xl hover:bg-red-500/5 transition-colors"
           >
             <LogOut size={18} className="text-red-400" />
@@ -191,21 +200,30 @@ function SettingItem({
   )
 }
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  checked,
+  onChange,
+  disabled,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  disabled?: boolean
+}) {
   return (
     <button
       onClick={(e) => {
         e.stopPropagation()
-        onChange(!checked)
+        if (!disabled) onChange(!checked)
       }}
-      className={`relative w-10 h-5.5 rounded-full transition-colors ${
+      disabled={disabled}
+      className={`relative w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${
         checked ? 'bg-spur-purple' : 'bg-spur-border'
       }`}
     >
       <motion.div
         animate={{ x: checked ? 18 : 2 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        className="absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow-sm"
+        className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm"
       />
     </button>
   )

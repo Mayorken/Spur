@@ -71,7 +71,7 @@ export default function Landing() {
                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               >
                 <Link
-                  to="/onboarding"
+                  to="/login"
                   className="px-8 py-4 rounded-full bg-gradient-to-r from-spur-purple to-spur-pink text-white font-semibold text-lg hover:opacity-90 transition-opacity glow-purple"
                 >
                   Get Early Access
@@ -351,7 +351,7 @@ export default function Landing() {
               Join the waitlist for early access. Be among the first to experience connection without compromise.
             </p>
             <Link
-              to="/onboarding"
+              to="/login"
               className="inline-block px-10 py-4 rounded-full bg-gradient-to-r from-spur-purple to-spur-pink text-white font-semibold text-lg hover:opacity-90 transition-opacity glow-purple"
             >
               Join the Waitlist

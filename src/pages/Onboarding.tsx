@@ -38,7 +38,7 @@ export default function Onboarding() {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     } else {
-      navigate('/app')
+      navigate('/app', { replace: true })
     }
   }
 
