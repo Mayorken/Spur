@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate, Link } from 'react-router-dom'
-import { Zap, Eye, EyeOff } from 'lucide-react'
+import { useNavigate, Link, Navigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
+import SpurLogo from '../components/SpurLogo'
 import { useAuth } from '../context/AuthContext'
 
 type Mode = 'login' | 'signup'
@@ -10,13 +11,13 @@ export default function Login() {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [age, setAge] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login, signup } = useAuth()
+  const { login, signup, token } = useAuth()
   const navigate = useNavigate()
+
+  if (token) return <Navigate to="/app" replace />
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,12 +29,7 @@ export default function Login() {
         await login(email, password)
         navigate('/app')
       } else {
-        if (!displayName.trim()) {
-          setError('Display name is required')
-          setLoading(false)
-          return
-        }
-        await signup(email, password, displayName, age ? Number(age) : undefined)
+        await signup(email, password, email.split('@')[0], undefined)
         navigate('/onboarding')
       }
     } catch (err) {
@@ -52,11 +48,9 @@ export default function Login() {
 
       <div className="relative z-10 max-w-sm w-full">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 justify-center mb-10">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-spur-purple to-spur-pink flex items-center justify-center">
-            <Zap size={16} className="text-white" />
-          </div>
-          <span className="text-xl font-bold text-white">Spur</span>
+        <Link to="/" className="flex items-center gap-3 justify-center mb-10 group">
+          <SpurLogo size="lg" className="group-hover:scale-110 transition-transform" />
+          <span className="text-xl font-bold text-spur-accent font-mono">SPUR</span>
         </Link>
 
         {/* Tab switcher */}
@@ -86,33 +80,6 @@ export default function Login() {
             onSubmit={handleSubmit}
             className="space-y-4"
           >
-            {mode === 'signup' && (
-              <>
-                <div>
-                  <label className="text-xs text-spur-muted mb-1.5 block">Display Name</label>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="How you appear to others"
-                    required
-                    className="w-full px-4 py-3 rounded-xl bg-spur-card border border-spur-border/50 text-white text-sm placeholder-spur-muted outline-none focus:border-spur-purple/60 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-spur-muted mb-1.5 block">Age (optional)</label>
-                  <input
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="Your age"
-                    min={18}
-                    max={99}
-                    className="w-full px-4 py-3 rounded-xl bg-spur-card border border-spur-border/50 text-white text-sm placeholder-spur-muted outline-none focus:border-spur-purple/60 transition-colors"
-                  />
-                </div>
-              </>
-            )}
 
             <div>
               <label className="text-xs text-spur-muted mb-1.5 block">Email</label>
@@ -178,10 +145,18 @@ export default function Login() {
           </motion.form>
         </AnimatePresence>
 
-        <p className="text-center text-spur-muted text-xs mt-6">
+        {mode === 'login' && (
+          <div className="text-center mt-4">
+            <Link to="/forgot-password" className="text-spur-purple text-xs hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+        )}
+
+        <p className="text-center text-spur-muted text-xs mt-4">
           By continuing you agree to our{' '}
-          <span className="text-spur-purple">Terms</span> &amp;{' '}
-          <span className="text-spur-purple">Privacy Policy</span>
+          <Link to="/terms" className="text-spur-purple hover:underline">Terms</Link> &amp;{' '}
+          <Link to="/privacy" className="text-spur-purple hover:underline">Privacy Policy</Link>
         </p>
       </div>
     </div>

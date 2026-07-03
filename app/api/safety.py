@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import and_, select
@@ -122,7 +123,7 @@ async def panic_button(
     """
     Panic button — one-tap exit.
     Deactivates all intents, hides the user from discovery,
-    and optionally notifies safety team.
+    and optionally notifies Digital Wingman.
     """
     from app.models.intent import Intent
 
@@ -137,10 +138,89 @@ async def panic_button(
     # Enable ghost mode
     current_user.ghost_mode = True
 
+    # Trigger Digital Wingman webhook if enabled
+    if current_user.wingman_enabled and current_user.wingman_webhook_url:
+        import asyncio
+        import httpx
+
+        async def send_wingman_alert():
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        current_user.wingman_webhook_url,
+                        json={
+                            "alert_type": "panic_activated",
+                            "user_name": current_user.display_name,
+                            "user_email": current_user.email,
+                            "latitude": current_user.latitude,
+                            "longitude": current_user.longitude,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "message": f"{current_user.display_name} activated panic button",
+                        },
+                        timeout=5,
+                    )
+            except Exception:
+                pass  # Silently fail if webhook unreachable
+
+        asyncio.create_task(send_wingman_alert())
+
     await db.commit()
 
     return PanicResponse(
         success=True,
         message="You are now safe. All intents deactivated, ghost mode enabled. "
-        "You can re-enable discovery when you are ready.",
+        "Your trusted contact has been notified.",
     )
+
+
+@router.post("/wingman/alert/{match_id}")
+async def trigger_wingman_alert(
+    match_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Trigger Digital Wingman alert when a match is created."""
+    if not current_user.wingman_enabled or not current_user.wingman_webhook_url:
+        raise HTTPException(status_code=400, detail="Digital Wingman not configured")
+
+    # Get match details
+    stmt = select(Match).where(Match.id == match_id)
+    result = await db.execute(stmt)
+    match = result.scalar_one_or_none()
+
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    # Get other user details
+    other_user_id = match.user_b_id if match.user_a_id == current_user.id else match.user_a_id
+    stmt = select(User).where(User.id == other_user_id)
+    result = await db.execute(stmt)
+    other_user = result.scalar_one_or_none()
+
+    # Send webhook
+    import asyncio
+    import httpx
+    from datetime import timezone
+
+    async def send_wingman_notification():
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    current_user.wingman_webhook_url,
+                    json={
+                        "alert_type": "match_created",
+                        "user_name": current_user.display_name,
+                        "match_with": other_user.display_name if other_user else "Unknown",
+                        "latitude": current_user.latitude,
+                        "longitude": current_user.longitude,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "message": f"{current_user.display_name} matched with {other_user.display_name if other_user else 'someone'}",
+                    },
+                    timeout=5,
+                )
+        except Exception:
+            pass
+
+    asyncio.create_task(send_wingman_notification())
+
+    return {"message": "Wingman alert sent", "match_id": str(match_id)}

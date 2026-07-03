@@ -8,6 +8,7 @@ interface ProfileCardProps {
   age: number
   distance: string
   intent: string
+  mode?: string | null
   imageUrl: string
   verified?: boolean
   experienceTags?: ExperienceTag[]
@@ -21,6 +22,7 @@ export default function ProfileCard({
   age,
   distance,
   intent,
+  mode,
   imageUrl,
   verified = false,
   experienceTags = [],
@@ -88,6 +90,16 @@ export default function ProfileCard({
               <div className="flex items-center gap-1 mt-1">
                 <MapPin size={12} className="text-spur-muted" />
                 <span className="text-spur-muted text-xs">{distance} away</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className="px-2 py-1 rounded-full bg-spur-purple/20 border border-spur-purple/40 text-spur-purple text-[10px] font-medium">
+                  {intent}
+                </span>
+                {mode && (
+                  <span className="px-2 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-[10px] font-medium">
+                    {mode.split('_').join(' ')}
+                  </span>
+                )}
               </div>
 
               {/* Experience tags on card */}

@@ -17,6 +17,7 @@ from app.schemas.rating import (
     UserExperienceResponse,
     get_rank,
 )
+from app.services.trust import recalculate_trust
 
 router = APIRouter(prefix="/ratings", tags=["ratings"])
 
@@ -103,6 +104,7 @@ async def rate_user(
             db.add(summary)
 
     await db.commit()
+    await recalculate_trust(db, data.rated_user_id)
     return ratings
 
 

@@ -24,6 +24,15 @@ class UserUpdate(BaseModel):
     ghost_mode: bool | None = None
     blurred_photos: bool | None = None
     location_radius_km: float | None = None
+    mode: str | None = None
+    is_stealth: bool | None = None
+    sexual_orientation: str | None = None
+    gender_identity: str | None = None
+    male_role: str | None = None
+    female_role: str | None = None
+    seeking_roles: list[str] | None = None
+    wingman_webhook_url: str | None = None
+    wingman_enabled: bool | None = None
 
 
 class UserLocationUpdate(BaseModel):
@@ -41,7 +50,16 @@ class UserResponse(BaseModel):
     is_verified: bool
     is_id_verified: bool
     ghost_mode: bool
+    is_stealth: bool
     trust_score: float
+    location_radius_km: float
+    mode: str | None
+    sexual_orientation: str | None
+    gender_identity: str | None
+    male_role: str | None
+    female_role: str | None
+    seeking_roles: list[str] | None
+    wingman_enabled: bool
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -55,6 +73,11 @@ class UserPublicResponse(BaseModel):
     avatar_url: str | None
     is_verified: bool
     distance_km: float | None = None
+    sexual_orientation: str | None
+    gender_identity: str | None
+    male_role: str | None
+    female_role: str | None
+    seeking_roles: list[str] | None
 
     model_config = {"from_attributes": True}
 

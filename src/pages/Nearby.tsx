@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Radio, MapPin, Users } from 'lucide-react'
+import { Radio, MapPin, Users, Loader2 } from 'lucide-react'
 import BottomNav from '../components/BottomNav'
 import RadarView from '../components/RadarView'
 import { intents, type NearbyIntentUser } from '../utils/api'
@@ -11,6 +11,7 @@ export default function Nearby() {
   const [nearbyUsers, setNearbyUsers] = useState<NearbyIntentUser[]>([])
   const [loading, setLoading] = useState(true)
   const [noIntent, setNoIntent] = useState(false)
+  const [matchingId, setMatchingId] = useState<string | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -25,6 +26,29 @@ export default function Nearby() {
         setLoading(false)
       })
   }, [])
+
+  const handleConnect = async (userId: string) => {
+    if (matchingId) return
+    setMatchingId(userId)
+    try {
+      const res = await intents.matchWith(userId)
+      const u = nearbyUsers.find((x) => x.user_id === userId)
+      navigate('/match', {
+        state: {
+          matchId: res.match_id,
+          otherUserName: u?.display_name ?? 'someone',
+          otherUserAvatar: u?.avatar_url ?? null,
+          intentType: u?.intent_type,
+          distanceKm: u?.distance_km,
+        },
+      })
+    } catch {
+      // already matched — go to messages
+      navigate('/messages')
+    } finally {
+      setMatchingId(null)
+    }
+  }
 
   const radarUsers = nearbyUsers.map((u) => ({
     id: u.user_id,
@@ -93,7 +117,7 @@ export default function Nearby() {
         </div>
       ) : view === 'radar' ? (
         <div className="px-4 py-8">
-          <RadarView users={radarUsers} onUserTap={(user) => navigate(`/chat/${user.id}`)} />
+          <RadarView users={radarUsers} onUserTap={(user) => handleConnect(user.id)} />
           <p className="text-center text-spur-muted text-xs mt-6">Tap a person to connect</p>
         </div>
       ) : (
@@ -105,16 +129,23 @@ export default function Nearby() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: i * 0.05 }}
-                onClick={() => navigate(`/chat/${user.user_id}`)}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-spur-card border border-spur-border/30 hover:border-spur-purple/50 transition-colors"
+                onClick={() => handleConnect(user.user_id)}
+                disabled={!!matchingId}
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-spur-card border border-spur-border/30 hover:border-spur-purple/50 transition-colors disabled:opacity-60"
               >
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-spur-border/50">
-                    <img
-                      src={user.avatar_url ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user_id}`}
-                      alt={user.display_name}
-                      className="w-full h-full object-cover"
-                    />
+                    {matchingId === user.user_id ? (
+                      <div className="w-full h-full bg-spur-dark flex items-center justify-center">
+                        <Loader2 size={20} className="text-spur-purple animate-spin" />
+                      </div>
+                    ) : (
+                      <img
+                        src={user.avatar_url ?? `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.user_id}`}
+                        alt={user.display_name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-spur-card" />
                 </div>

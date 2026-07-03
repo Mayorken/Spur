@@ -14,6 +14,7 @@ from app.schemas.match import (
     ConversationResponse,
     MatchWithUser,
 )
+from app.models.match import ChatMessage
 from app.services.chat import get_conversations, get_messages, send_message
 from app.services.matching import get_user_matches
 
@@ -55,8 +56,12 @@ async def list_conversations(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get all conversations for the current user."""
-    return await get_conversations(db, current_user.id)
+    """Get all conversations for the current user, with live online status."""
+    from app.websockets.matching import manager
+    convs = await get_conversations(db, current_user.id)
+    for c in convs:
+        c.is_online = uuid.UUID(str(c.other_user_id)) in manager.active_connections
+    return convs
 
 
 @router.get("/{match_id}/messages", response_model=list[ChatMessageResponse])
@@ -65,8 +70,7 @@ async def get_match_messages(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get messages for a specific match."""
-    # Verify user is part of this match
+    """Get messages for a specific match and mark received ones as read."""
     stmt = select(Match).where(
         and_(
             Match.id == match_id,
@@ -79,7 +83,22 @@ async def get_match_messages(
     if not match:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
 
-    return await get_messages(db, match_id)
+    messages = await get_messages(db, match_id)
+
+    # Mark all messages from the other user as read
+    unread_stmt = select(ChatMessage).where(
+        and_(
+            ChatMessage.match_id == match_id,
+            ChatMessage.sender_id != current_user.id,
+            ChatMessage.is_read == False,  # noqa: E712
+        )
+    )
+    unread_result = await db.execute(unread_stmt)
+    for msg in unread_result.scalars().all():
+        msg.is_read = True
+    await db.commit()
+
+    return messages
 
 
 @router.post("/{match_id}/messages", response_model=ChatMessageResponse)

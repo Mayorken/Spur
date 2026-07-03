@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Phone, Video, MoreVertical, Send, Shield, AlertTriangle, Star } from 'lucide-react'
 import RatingModal from '../components/RatingModal'
-import { matches, type ChatMessageResponse, type ConversationResponse } from '../utils/api'
+import CallModal from '../components/CallModal'
+import { matches, ratings, safety, type ChatMessageResponse, type ConversationResponse } from '../utils/api'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { useWebRTC } from '../hooks/useWebRTC'
 import { useAuth } from '../context/AuthContext'
 
 export default function Chat() {
@@ -19,13 +21,18 @@ export default function Chat() {
   const [showRating, setShowRating] = useState(false)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [reportReason, setReportReason] = useState('')
+  const [reportStep, setReportStep] = useState<'menu' | 'report' | 'done'>('menu')
+  const [incomingCallFrom, setIncomingCallFrom] = useState<string | null>(null)
+  const [callType, setCallType] = useState<'audio' | 'video'>('audio')
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  const { callState, startCall, acceptCall, declineCall, endCall, setRemoteAnswer } = useWebRTC()
 
   const { send } = useWebSocket(
     useCallback(
       (msg: Record<string, unknown>) => {
         if (msg.type === 'chat_message' && msg.from_user_id) {
-          // Real-time message arrived — add as a pseudo-message and then re-fetch
           setMessages((prev) => [
             ...prev,
             {
@@ -37,9 +44,14 @@ export default function Chat() {
               created_at: msg.timestamp as string,
             },
           ])
+        } else if (msg.type === 'call_offer') {
+          setIncomingCallFrom(msg.from_user_id as string)
+          setCallType(msg.call_type as 'audio' | 'video')
+        } else if (msg.type === 'call_answer') {
+          setRemoteAnswer(msg.answer as string)
         }
       },
-      [matchId],
+      [matchId, setRemoteAnswer],
     ),
   )
 
@@ -125,11 +137,25 @@ export default function Chat() {
           </div>
 
           <div className="flex items-center gap-1">
-            <button className="p-2 rounded-full hover:bg-spur-card transition-colors">
-              <Phone size={16} className="text-spur-muted" />
+            <button
+              onClick={() => {
+                setCallType('audio')
+                startCall(conversation?.other_user_id ?? '')
+              }}
+              className="p-2 rounded-full hover:bg-spur-card transition-colors"
+              title="Start audio call"
+            >
+              <Phone size={16} className="text-spur-muted hover:text-spur-purple transition-colors" />
             </button>
-            <button className="p-2 rounded-full hover:bg-spur-card transition-colors">
-              <Video size={16} className="text-spur-muted" />
+            <button
+              onClick={() => {
+                setCallType('video')
+                startCall(conversation?.other_user_id ?? '')
+              }}
+              className="p-2 rounded-full hover:bg-spur-card transition-colors"
+              title="Start video call"
+            >
+              <Video size={16} className="text-spur-muted hover:text-spur-purple transition-colors" />
             </button>
             <button
               onClick={() => setShowRating(true)}
@@ -227,58 +253,153 @@ export default function Chat() {
         </div>
       </div>
 
+      {/* Call Modal */}
+      <CallModal
+        callState={callState}
+        otherName={otherName}
+        otherAvatar={otherAvatar}
+        isIncoming={!!incomingCallFrom}
+        localStream={callState.localStream}
+        remoteStream={callState.remoteStream}
+        onAccept={() => {
+          acceptCall('')
+          setIncomingCallFrom(null)
+        }}
+        onDecline={() => {
+          declineCall()
+          setIncomingCallFrom(null)
+        }}
+        onEnd={() => {
+          endCall()
+          setIncomingCallFrom(null)
+        }}
+      />
+
       {/* Rating Modal */}
       <AnimatePresence>
-        {showRating && (
+        {showRating && conversation && (
           <RatingModal
             user={{ name: otherName, imageUrl: otherAvatar }}
-            onSubmit={() => setShowRating(false)}
+            onSubmit={async (tags: string[]) => {
+              await ratings.rate(conversation.other_user_id, tags)
+              setShowRating(false)
+            }}
             onClose={() => setShowRating(false)}
           />
         )}
       </AnimatePresence>
 
       {/* Safety Modal */}
-      {showSafety && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-6"
-          onClick={() => setShowSafety(false)}
-        >
+      <AnimatePresence>
+        {showSafety && (
           <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm bg-spur-dark rounded-3xl p-6 border border-spur-border"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-6"
+            onClick={() => { setShowSafety(false); setReportStep('menu') }}
           >
-            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle size={24} className="text-red-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-white text-center mb-2">Safety Tools</h3>
-            <p className="text-spur-muted text-xs text-center mb-6">
-              Your safety is our priority. Use these tools anytime.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => navigate('/')}
-                className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
-              >
-                Panic Button — Exit Now
-              </button>
-              <button className="w-full py-3 rounded-xl bg-spur-card border border-spur-border text-white text-sm font-medium hover:bg-spur-card/80 transition-colors">
-                Report User
-              </button>
-              <button className="w-full py-3 rounded-xl bg-spur-card border border-spur-border text-white text-sm font-medium hover:bg-spur-card/80 transition-colors">
-                Block & Clear Chat
-              </button>
-              <button onClick={() => setShowSafety(false)} className="w-full py-3 text-spur-muted text-sm">
-                Close
-              </button>
-            </div>
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-spur-dark rounded-3xl p-6 border border-spur-border"
+            >
+              {reportStep === 'menu' && (
+                <>
+                  <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle size={24} className="text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white text-center mb-2">Safety Tools</h3>
+                  <p className="text-spur-muted text-xs text-center mb-6">Your safety is our priority.</p>
+                  <div className="space-y-3">
+                    <button
+                      onClick={async () => {
+                        await safety.panic()
+                        navigate('/')
+                      }}
+                      className="w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium hover:bg-red-500/20 transition-colors"
+                    >
+                      Panic Button — Exit Now
+                    </button>
+                    <button
+                      onClick={() => setReportStep('report')}
+                      className="w-full py-3 rounded-xl bg-spur-card border border-spur-border text-white text-sm font-medium hover:bg-spur-card/80 transition-colors"
+                    >
+                      Report {otherName}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!conversation) return
+                        await safety.block(conversation.other_user_id)
+                        navigate('/messages')
+                      }}
+                      className="w-full py-3 rounded-xl bg-spur-card border border-spur-border text-white text-sm font-medium hover:bg-spur-card/80 transition-colors"
+                    >
+                      Block & Leave Chat
+                    </button>
+                    <button onClick={() => setShowSafety(false)} className="w-full py-3 text-spur-muted text-sm">
+                      Close
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {reportStep === 'report' && (
+                <>
+                  <h3 className="text-lg font-semibold text-white text-center mb-4">Report {otherName}</h3>
+                  <p className="text-spur-muted text-xs text-center mb-4">Select a reason:</p>
+                  <div className="space-y-2 mb-4">
+                    {['harassment', 'fake', 'spam', 'unsafe', 'underage', 'other'].map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => setReportReason(r)}
+                        className={`w-full py-2.5 rounded-xl text-sm font-medium border transition-colors capitalize ${
+                          reportReason === r
+                            ? 'bg-spur-purple/20 border-spur-purple text-white'
+                            : 'bg-spur-card border-spur-border text-spur-muted'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    disabled={!reportReason}
+                    onClick={async () => {
+                      if (!conversation || !reportReason) return
+                      await safety.report(conversation.other_user_id, reportReason)
+                      setReportStep('done')
+                    }}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-spur-purple to-spur-pink text-white text-sm font-medium disabled:opacity-40"
+                  >
+                    Submit Report
+                  </button>
+                  <button onClick={() => setReportStep('menu')} className="w-full py-2 text-spur-muted text-sm mt-2">
+                    Back
+                  </button>
+                </>
+              )}
+
+              {reportStep === 'done' && (
+                <div className="text-center py-4">
+                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Shield size={24} className="text-green-400" />
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">Report Submitted</h3>
+                  <p className="text-spur-muted text-xs mb-6">Thank you. Our safety team will review this report.</p>
+                  <button
+                    onClick={() => { setShowSafety(false); setReportStep('menu') }}
+                    className="w-full py-3 rounded-xl bg-spur-card border border-spur-border text-white text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   )
 }

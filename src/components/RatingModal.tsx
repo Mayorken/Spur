@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { X, Send } from 'lucide-react'
+import { ratings } from '../utils/api'
 
 interface RatingModalProps {
   user: {
@@ -11,23 +12,15 @@ interface RatingModalProps {
   onClose: () => void
 }
 
-const availableTags = [
-  { id: 'great_conversationalist', label: 'Great Conversationalist', emoji: '💬' },
-  { id: 'head_master', label: 'Head Master', emoji: '👑' },
-  { id: 'skilled_lover', label: 'Skilled Lover', emoji: '🔥' },
-  { id: 'respectful', label: 'Respectful', emoji: '🤝' },
-  { id: 'fun_energy', label: 'Fun Energy', emoji: '⚡' },
-  { id: 'good_kisser', label: 'Good Kisser', emoji: '💋' },
-  { id: 'generous', label: 'Generous', emoji: '💎' },
-  { id: 'adventurous', label: 'Adventurous', emoji: '🌶️' },
-  { id: 'clean_hygienic', label: 'Clean & Hygienic', emoji: '✨' },
-  { id: 'knows_boundaries', label: 'Knows Boundaries', emoji: '🛡️' },
-  { id: 'stamina_king', label: 'Stamina King', emoji: '💪' },
-  { id: 'romantic', label: 'Romantic', emoji: '🌹' },
-]
-
 export default function RatingModal({ user, onSubmit, onClose }: RatingModalProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [availableTags, setAvailableTags] = useState<{ id: string; label: string; emoji: string }[]>([])
+
+  useEffect(() => {
+    ratings.tags().then((tags) => {
+      setAvailableTags(Object.entries(tags).map(([id, t]) => ({ id, label: t.label, emoji: t.emoji })))
+    }).catch(() => {})
+  }, [])
 
   const toggleTag = (tagId: string) => {
     setSelected((prev) => {

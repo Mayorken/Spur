@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem('spur_token')
+    localStorage.removeItem('spur_onboarded')
     setState({ user: null, token: null, loading: false })
   }, [])
 
